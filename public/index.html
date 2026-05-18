@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>X-Teaching MVP | E-learning</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+    body { background: #f4f7fc; color: #1a2c3e; line-height: 1.5; }
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #e2e8f0; }
+    ::-webkit-scrollbar-thumb { background: #2c7da0; border-radius: 10px; }
+
+    .app-container { max-width: 1280px; margin: 0 auto; padding: 1.5rem 2rem; }
+
+    .header {
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 1rem; background: white; padding: 1rem 2rem;
+      border-radius: 2rem; box-shadow: 0 8px 20px rgba(0,0,0,0.03), 0 2px 6px rgba(0,0,0,0.05);
+      margin-bottom: 2rem;
+    }
+    .logo h1 {
+      font-size: 1.8rem; font-weight: 700;
+      background: linear-gradient(135deg, #1e6091, #34a0a4);
+      background-clip: text; -webkit-background-clip: text; color: transparent; letter-spacing: -0.3px;
+    }
+    .logo span { font-size: 0.85rem; background: #e9ecef; padding: 0.2rem 0.7rem; border-radius: 30px; font-weight: 500; color: #2c7da0; }
+    .user-area { display: flex; align-items: center; gap: 1rem; background: #f8fafc; padding: 0.5rem 1.2rem; border-radius: 60px; }
+    .user-greeting { font-weight: 600; font-size: 0.9rem; }
+    .btn-sm { background: transparent; border: 1px solid #cbd5e1; padding: 0.4rem 1rem; border-radius: 40px; font-weight: 500; cursor: pointer; transition: all 0.2s; font-size: 0.8rem; }
+    .btn-sm:hover { background: #eef2ff; }
+    .btn-primary-sm { background: #1e6091; border-color: #1e6091; color: white; }
+    .btn-primary-sm:hover { background: #0f4b6e; }
+
+    .nav-tabs {
+      display: flex; gap: 0.5rem; margin-bottom: 2rem; background: white;
+      padding: 0.5rem; border-radius: 60px; width: fit-content;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .tab-btn {
+      padding: 0.6rem 1.6rem; border: none; background: transparent; font-weight: 600;
+      border-radius: 40px; cursor: pointer; transition: all 0.2s; font-size: 0.95rem; color: #4b5563;
+    }
+    .tab-btn.active { background: #1e6091; color: white; box-shadow: 0 2px 8px rgba(30,96,145,0.2); }
+
+    /* LIVE TAB badge */
+    .live-badge {
+      display: inline-block; background: #ef4444; color: white; font-size: 0.65rem;
+      font-weight: 700; padding: 1px 6px; border-radius: 20px; margin-left: 5px;
+      vertical-align: middle; animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+
+    .courses-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.8rem; margin-top: 1rem; }
+    .course-card { background: white; border-radius: 1.5rem; overflow: hidden; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 8px 20px rgba(0,0,0,0.05); }
+    .course-card:hover { transform: translateY(-4px); box-shadow: 0 20px 30px -12px rgba(0,0,0,0.1); }
+    .course-img { height: 160px; background: #bcd4e6; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; color: #1e6091; background-size: cover; background-position: center; }
+    .course-info { padding: 1.2rem 1.2rem 1.5rem; }
+    .course-title { font-size: 1.25rem; font-weight: 700; margin-bottom: 0.3rem; }
+    .course-instructor { font-size: 0.8rem; color: #5f6c80; margin-bottom: 0.7rem; display: flex; align-items: center; gap: 5px; }
+    .course-desc { font-size: 0.85rem; color: #334155; margin-bottom: 1rem; line-height: 1.4; }
+    .enroll-btn { width: 100%; background: #eef2ff; border: none; padding: 0.7rem; border-radius: 40px; font-weight: 600; cursor: pointer; transition: 0.2s; font-size: 0.85rem; }
+    .enroll-btn.enrolled { background: #d1fae5; color: #0b5e42; cursor: default; }
+    .enroll-btn:not(.enrolled):hover { background: #1e6091; color: white; }
+
+    .learning-course { background: white; border-radius: 1.5rem; padding: 1.2rem; margin-bottom: 1.5rem; box-shadow: 0 4px 12px rgba(0,0,0,0.04); transition: 0.2s; }
+    .learning-header { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; margin-bottom: 0.8rem; }
+    .learning-title { font-size: 1.25rem; font-weight: 700; }
+    .progress-percent { font-weight: 700; color: #1e6091; }
+    .progress-bar-container { background: #e2e8f0; border-radius: 20px; height: 8px; width: 100%; margin: 0.5rem 0 1rem; }
+    .progress-fill { background: #2c7da0; width: 0%; height: 8px; border-radius: 20px; }
+    .lessons-list { list-style: none; margin-top: 0.7rem; }
+
+    /* LESSON ITEM — clickable */
+    .lesson-item {
+      display: flex; align-items: center; gap: 0.8rem;
+      padding: 0.6rem 0.5rem; border-bottom: 1px solid #edf2f7;
+      border-radius: 0.5rem; transition: background 0.15s;
+    }
+    .lesson-item:hover { background: #f0f7ff; }
+    .lesson-check { width: 18px; height: 18px; cursor: pointer; accent-color: #1e6091; flex-shrink: 0; }
+    .lesson-name { font-size: 0.9rem; font-weight: 500; flex: 1; }
+
+    /* lesson resource buttons */
+    .lesson-resources { display: flex; gap: 5px; flex-shrink: 0; }
+    .res-btn {
+      border: none; border-radius: 20px; padding: 3px 10px; font-size: 0.72rem;
+      font-weight: 600; cursor: pointer; transition: 0.15s; display: flex; align-items: center; gap: 4px;
+    }
+    .res-btn-video { background: #dbeafe; color: #1e40af; }
+    .res-btn-video:hover { background: #1e40af; color: white; }
+    .res-btn-pdf { background: #fee2e2; color: #991b1b; }
+    .res-btn-pdf:hover { background: #991b1b; color: white; }
+
+    .empty-state { text-align: center; padding: 3rem; background: white; border-radius: 2rem; color: #4a627a; }
+
+    /* ===================== LIVE CLASSROOM ===================== */
+    .live-section-title {
+      font-size: 1.1rem; font-weight: 700; color: #1e6091;
+      margin: 0 0 1rem; display: flex; align-items: center; gap: 8px;
+    }
+    .live-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: 1.4rem; margin-bottom: 2.5rem; }
+
+    .live-card {
+      background: white; border-radius: 1.5rem; padding: 1.3rem 1.5rem;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.06); position: relative; overflow: hidden;
+      border-left: 5px solid #1e6091; transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .live-card:hover { transform: translateY(-3px); box-shadow: 0 14px 28px rgba(0,0,0,0.1); }
+    .live-card.status-live { border-left-color: #ef4444; }
+    .live-card.status-upcoming { border-left-color: #f59e0b; }
+    .live-card.status-ended { border-left-color: #9ca3af; opacity: 0.7; }
+
+    .live-card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.7rem; }
+    .live-subject { font-size: 1.05rem; font-weight: 700; }
+    .live-status-pill {
+      font-size: 0.7rem; font-weight: 700; padding: 3px 10px; border-radius: 20px;
+      white-space: nowrap; display: flex; align-items: center; gap: 4px;
+    }
+    .pill-live { background: #fee2e2; color: #dc2626; }
+    .pill-upcoming { background: #fef3c7; color: #b45309; }
+    .pill-ended { background: #f3f4f6; color: #6b7280; }
+
+    .live-meta { font-size: 0.82rem; color: #5f6c80; margin-bottom: 0.4rem; display: flex; align-items: center; gap: 6px; }
+    .live-teacher { font-size: 0.85rem; font-weight: 600; color: #1a2c3e; margin-bottom: 0.3rem; display: flex; align-items: center; gap: 6px; }
+    .live-desc { font-size: 0.8rem; color: #64748b; margin: 0.5rem 0 1rem; line-height: 1.4; }
+
+    .join-btn {
+      width: 100%; padding: 0.65rem; border: none; border-radius: 40px;
+      font-weight: 700; font-size: 0.85rem; cursor: pointer; transition: 0.2s;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+    }
+    .join-btn-active { background: #ef4444; color: white; }
+    .join-btn-active:hover { background: #dc2626; }
+    .join-btn-upcoming { background: #fef3c7; color: #92400e; cursor: not-allowed; }
+    .join-btn-ended { background: #f3f4f6; color: #9ca3af; cursor: not-allowed; }
+
+    /* schedule info bar */
+    .schedule-bar {
+      background: white; border-radius: 1.2rem; padding: 1rem 1.5rem;
+      margin-bottom: 2rem; box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+      display: flex; gap: 2rem; align-items: center; flex-wrap: wrap;
+    }
+    .schedule-bar-item { font-size: 0.85rem; color: #334155; display: flex; align-items: center; gap: 6px; }
+    .schedule-bar-item strong { color: #1e6091; }
+
+    /* modal */
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 1000; }
+    .modal-content { background: white; max-width: 420px; width: 90%; padding: 2rem; border-radius: 2rem; box-shadow: 0 20px 35px rgba(0,0,0,0.2); }
+    .modal-content h3 { margin-bottom: 1.2rem; }
+    .modal-content input { width: 100%; padding: 0.8rem; margin: 0.5rem 0 1rem; border: 1px solid #cbd5e1; border-radius: 1rem; }
+    .modal-buttons { display: flex; justify-content: flex-end; gap: 0.8rem; margin-top: 1rem; }
+    .error-msg { color: #c2410c; font-size: 0.75rem; margin-top: -0.5rem; margin-bottom: 0.5rem; }
+
+    footer { text-align: center; margin-top: 3rem; font-size: 0.75rem; color: #6c757d; }
+
+    @media (max-width: 680px) {
+      .app-container { padding: 1rem; }
+      .header { flex-direction: column; align-items: stretch; }
+      .nav-tabs { width: 100%; justify-content: center; }
+      .schedule-bar { gap: 1rem; }
+    }
+
+    /* Chatbot */
+    #chatbot {
+      position: fixed; bottom: 20px; right: 20px; width: 280px; height: 220px;
+      background: white; border-radius: 1rem; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      display: flex; flex-direction: column; overflow: hidden; z-index: 999;
+      transition: box-shadow 0.2s;
+    }
+    #chatbot.dragging { box-shadow: 0 20px 50px rgba(0,0,0,0.35); transition: none; }
+    #chat-header {
+      background: #1e6091; color: white; padding: 10px; font-weight: bold;
+      cursor: grab; user-select: none; display: flex; align-items: center; gap: 8px;
+    }
+    #chat-header:active { cursor: grabbing; }
+    #chat-header .drag-hint { font-size: 0.65rem; opacity: 0.6; font-weight: 400; margin-left: auto; }
+    #chat-messages { flex: 1; padding: 10px; overflow-y: auto; font-size: 0.85rem; }
+    .msg { margin-bottom: 8px; }
+    .user { text-align: right; }
+    .bot { text-align: left; color: #1e6091; }
+    #chat-input-area { display: flex; border-top: 1px solid #eee; }
+    #chat-input { flex: 1; border: none; padding: 10px; outline: none; }
+    #send-btn { border: none; background: #1e6091; color: white; padding: 10px; cursor: pointer; }
+  </style>
+</head>
+
+<!-- CHATBOT -->
+<div id="chatbot">
+  <div id="chat-header">Sinh viên năm 8 🤖 <span class="drag-hint">✥ kéo để di chuyển</span></div>
+  <div id="chat-messages"></div>
+  <div id="chat-input-area">
+    <input type="text" id="chat-input" placeholder="Hỏi gì...">
+    <button id="send-btn">Gửi</button>
+  </div>
+</div>
+
+<body>
+<div class="app-container">
+  <div class="header">
+    <div class="logo">
+      <h1>X-Teaching <span>MVP</span></h1>
+      <div style="font-size:0.7rem;color:#2c7da0;">Làm chủ trong một đêm</div>
+    </div>
+    <div class="user-area" id="userArea">
+      <div class="user-greeting" id="greetingText">Guest</div>
+      <button class="btn-sm" id="loginBtn"><i class="fas fa-sign-in-alt"></i> Log in</button>
+      <button class="btn-sm btn-primary-sm" id="signupBtn"><i class="fas fa-user-plus"></i> Sign up</button>
+      <button class="btn-sm" id="logoutBtn" style="display:none;"><i class="fas fa-sign-out-alt"></i> Logout</button>
+    </div>
+  </div>
+
+  <div class="nav-tabs">
+    <button class="tab-btn active" data-tab="catalog"><i class="fas fa-book-open"></i> Xem khoá học</button>
+    <button class="tab-btn" data-tab="mylearning"><i class="fas fa-graduation-cap"></i> Khoá học của tao</button>
+    <button class="tab-btn" data-tab="live"><i class="fas fa-video"></i> Phòng học trực tiếp <span class="live-badge">LIVE</span></button>
+  </div>
+
+  <div id="catalogView" class="view"></div>
+  <div id="mylearningView" class="view" style="display:none;"></div>
+  <div id="liveView" class="view" style="display:none;"></div>
+
+  <footer>© 2026 X-Teaching — MVP e-learning. Học thật thi thật.</footer>
+</div>
+
+<!-- MODAL LOGIN -->
+<div id="loginModal" class="modal">
+  <div class="modal-content">
+    <h3><i class="fas fa-key"></i> Login</h3>
+    <input type="text" id="loginUsername" placeholder="Username">
+    <input type="password" id="loginPassword" placeholder="Password">
+    <div id="loginError" class="error-msg"></div>
+    <div class="modal-buttons">
+      <button class="btn-sm" id="closeLoginModal">Cancel</button>
+      <button class="btn-sm btn-primary-sm" id="confirmLoginBtn">Login</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL SIGNUP -->
+<div id="signupModal" class="modal">
+  <div class="modal-content">
+    <h3><i class="fas fa-user-edit"></i> Create Account</h3>
+    <input type="text" id="signupUsername" placeholder="Username">
+    <input type="email" id="signupEmail" placeholder="Email">
+    <input type="password" id="signupPassword" placeholder="Password">
+    <div id="signupError" class="error-msg"></div>
+    <div class="modal-buttons">
+      <button class="btn-sm" id="closeSignupModal">Cancel</button>
+      <button class="btn-sm btn-primary-sm" id="confirmSignupBtn">Register</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===================== CHATBOT DRAG ===================== */
+(function() {
+  const bot = document.getElementById('chatbot');
+  const header = document.getElementById('chat-header');
+  let dragging = false, startX, startY, startLeft, startTop;
+
+  // Convert initial bottom/right to top/left so transform works cleanly
+  function initPosition() {
+    const r = bot.getBoundingClientRect();
+    bot.style.left = r.left + 'px';
+    bot.style.top = r.top + 'px';
+    bot.style.right = 'auto';
+    bot.style.bottom = 'auto';
+  }
+
+  header.addEventListener('mousedown', e => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON') return;
+    if (!bot.style.left) initPosition();
+    dragging = true;
+    startX = e.clientX; startY = e.clientY;
+    startLeft = parseInt(bot.style.left); startTop = parseInt(bot.style.top);
+    bot.classList.add('dragging');
+    e.preventDefault();
+  });
+
+  document.addEventListener('mousemove', e => {
+    if (!dragging) return;
+    const dx = e.clientX - startX, dy = e.clientY - startY;
+    let newLeft = startLeft + dx, newTop = startTop + dy;
+    // clamp inside viewport
+    newLeft = Math.max(0, Math.min(window.innerWidth - bot.offsetWidth, newLeft));
+    newTop = Math.max(0, Math.min(window.innerHeight - bot.offsetHeight, newTop));
+    bot.style.left = newLeft + 'px';
+    bot.style.top = newTop + 'px';
+  });
+
+  document.addEventListener('mouseup', () => {
+    if (!dragging) return;
+    dragging = false;
+    bot.classList.remove('dragging');
+  });
+
+  // Touch support
+  header.addEventListener('touchstart', e => {
+    if (!bot.style.left) initPosition();
+    dragging = true;
+    const t = e.touches[0];
+    startX = t.clientX; startY = t.clientY;
+    startLeft = parseInt(bot.style.left); startTop = parseInt(bot.style.top);
+    bot.classList.add('dragging');
+  }, { passive: true });
+
+  document.addEventListener('touchmove', e => {
+    if (!dragging) return;
+    const t = e.touches[0];
+    const dx = t.clientX - startX, dy = t.clientY - startY;
+    let newLeft = startLeft + dx, newTop = startTop + dy;
+    newLeft = Math.max(0, Math.min(window.innerWidth - bot.offsetWidth, newLeft));
+    newTop = Math.max(0, Math.min(window.innerHeight - bot.offsetHeight, newTop));
+    bot.style.left = newLeft + 'px';
+    bot.style.top = newTop + 'px';
+  }, { passive: true });
+
+  document.addEventListener('touchend', () => { dragging = false; bot.classList.remove('dragging'); });
+})();
+
+/* ===================== CHATBOT — Google Gemini ===================== */
+
+let chatHistory = [];
+
+async function sendMessageToAI(message) {
+  try {
+    const response = await fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message })
+    });
+    if (!response.ok) {
+      const err = await response.json();
+      throw new Error(err.error || "Lỗi server");
+    }
+    const data = await response.json();
+    return data.reply;
+  } catch (err) {
+    console.error(err);
+    return "💥 Lỗi: " + err.message;
+  }
+}
+
+const chatInput = document.getElementById("chat-input");
+const sendBtn = document.getElementById("send-btn");
+const chatMessages = document.getElementById("chat-messages");
+
+function addMessage(text, type) {
+  const div = document.createElement("div");
+  div.className = `msg ${type}`; div.innerText = text;
+  chatMessages.appendChild(div); chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+sendBtn.onclick = async () => {
+  const text = chatInput.value.trim(); if (!text) return;
+  addMessage(text, "user"); chatInput.value = ""; addMessage("...", "bot");
+  const reply = await sendMessageToAI(text); chatMessages.lastChild.innerText = reply;
+};
+chatInput.addEventListener("keypress", (e) => { if (e.key === "Enter") sendBtn.click(); });
+
+/* ===================== COURSES DATA ===================== */
+// resources: array of { type: 'video'|'pdf', label: string, url: string }
+const COURSES_DB = [
+  {
+    id: 1, title: "Giải tích I", instructor: "Ronaldo", desc: "Đạo hàm, Tích Phân, Giới hạn.", price: 0, imagePath: "GT1.jpg", imageIcon: "fas fa-infinity",
+    lessons: [
+      { name: "Bài 1: Giới thiệu hàm số", resources: [{ type: "video", label: "Xem video", url: "https://www.youtube.com/watch?v=-WKE4klF6-A&list=PL5g_dfwUnO84tXyWXKnzF7aZXNT_SkHoY" }, { type: "pdf", label: "Bài tập", url: "https://cuuduongthancong.com/pvf/2769434/giai-tich-2//tuye%CC%89n-ta%CC%A3p-de%CC%80-thi-cuo%CC%81i-ki%CC%80-co%CC%81-gia%CC%89i-chi-tie%CC%81t.pdf#google_vignette" }] },
+      { name: "Bài 2: Tìm đạo hàm", resources: [{ type: "video", label: "Xem video", url: "https://www.youtube.com/watch?v=krLN9nBAIMk&list=PL5g_dfwUnO84tXyWXKnzF7aZXNT_SkHoY&index=2" }] },
+    ]
+  },
+  {
+    id: 2, title: "Giải tích II", instructor: "Phong ", desc: "Tích phân đường, Tích phân mặt.", price: 100000, imageIcon: "fas fa-wave-square",
+    lessons: [
+      { name: "Phong không che", resources: [{ type: "video", label: "Xem video", url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" }] },
+      { name: "Đề thi 2026.2", resources: [{ type: "pdf", label: "Đề thi PDF", url: "https://www.w3.org/WAI/WCAG21/Techniques/pdf/PDF1" }] },
+    ]
+  },
+  {
+    id: 3, title: "Giải tích III", instructor: "Thành", desc: "Chuỗi số, Khai triển Fourier.", price: 100000, imageIcon: "fas fa-brain",
+    lessons: [
+      { name: "Bài 1: Chuỗi số", resources: [{ type: "video", label: "Xem video", url: "https://www.youtube.com/watch?v=r6sGWTCMz2k" }, { type: "pdf", label: "Tài liệu", url: "https://www.w3.org/WAI/WCAG21/Techniques/pdf/PDF1" }] },
+    ]
+  },
+  {
+    id: 4, title: "Đại số tuyến tính", instructor: "Messi", desc: "Vector, Ma trận, Không gian tuyến tính.", price: 100000, imageIcon: "fas fa-th",
+    lessons: [
+      { name: "Bài 1: Ma trận cơ bản", resources: [{ type: "video", label: "Xem video", url: "https://www.youtube.com/watch?v=fNk_zzaMoSs" }] },
+      { name: "Bài 2: Định thức", resources: [{ type: "pdf", label: "Bài tập", url: "https://www.w3.org/WAI/WCAG21/Techniques/pdf/PDF1" }] },
+    ]
+  }
+];
+
+/* ===================== LIVE SESSIONS DATA ===================== */
+// status: 'live' | 'upcoming' | 'ended'
+// meetLink: Google Meet / Zoom link
+const LIVE_SESSIONS = [
+  {
+    id: 1, subject: "Giải tích I — Đạo hàm nâng cao", teacher: "Thầy Ronaldo",
+    status: "live", dateStr: "Hôm nay, 20:00 – 21:30",
+    desc: "Ôn tập đạo hàm hàm hợp, quy tắc L'Hôpital và bài tập thực chiến.",
+    meetLink: "https://meet.google.com/abc-defg-hij", participants: 12
+  },
+  {
+    id: 2, subject: "Đại số tuyến tính — Ma trận & Định thức", teacher: "Thầy Messi",
+    status: "upcoming", dateStr: "Thứ Ba, 19:00 – 20:30",
+    desc: "Phép tính ma trận, tìm hạng, giải hệ phương trình tuyến tính.",
+    meetLink: "https://meet.google.com/xyz-uvwx-yz1", participants: 0
+  },
+  {
+    id: 3, subject: "Giải tích II — Tích phân bội", teacher: "Thầy Phong",
+    status: "upcoming", dateStr: "Thứ Tư, 20:30 – 22:00",
+    desc: "Tích phân kép, đổi biến, ứng dụng tính diện tích và thể tích.",
+    meetLink: "https://meet.google.com/pqr-stuv-wx2", participants: 0
+  },
+  {
+    id: 4, subject: "Giải tích III — Chuỗi Fourier", teacher: "Thầy Thành",
+    status: "ended", dateStr: "Thứ Hai, 18:00 – 19:30",
+    desc: "Khai triển Fourier, điều kiện hội tụ và ứng dụng.",
+    meetLink: null, participants: 24
+  },
+  {
+    id: 5, subject: "Luyện đề — Đại số cuối kỳ", teacher: "Thầy Messi",
+    status: "upcoming", dateStr: "Thứ Sáu, 21:00 – 23:00",
+    desc: "Giải full đề thi kỳ trước. Mang bút và giấy nháp.",
+    meetLink: "https://meet.google.com/lmn-opqr-st3", participants: 0
+  },
+  {
+    id: 6, subject: "Giải tích I — Hỏi đáp trước thi", teacher: "Thầy Ronaldo",
+    status: "live", dateStr: "Hôm nay, 21:30 – 22:30",
+    desc: "Phòng mở, hỏi bất kỳ câu gì về chương trình GT1.",
+    meetLink: "https://meet.google.com/qrs-tuvw-xy4", participants: 7
+  }
+];
+
+/* ===================== STORAGE ===================== */
+const USERS_STORAGE = "eduflow_users";
+const CURRENT_USER_KEY = "eduflow_currentUser";
+let currentUser = null;
+let users = [];
+let activeTab = "catalog";
+
+function loadData() {
+  const su = localStorage.getItem(USERS_STORAGE);
+  users = su ? JSON.parse(su) : [];
+  const sc = localStorage.getItem(CURRENT_USER_KEY);
+  if (sc) {
+    const cu = JSON.parse(sc);
+    const found = users.find(u => u.id === cu.id);
+    currentUser = found || null;
+  }
+}
+function persistUsers() { localStorage.setItem(USERS_STORAGE, JSON.stringify(users)); }
+function persistCurrentUser() {
+  if (currentUser) localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(currentUser));
+  else localStorage.removeItem(CURRENT_USER_KEY);
+}
+function updateUserInArray(u) {
+  const i = users.findIndex(x => x.id === u.id);
+  if (i !== -1) users[i] = u; else users.push(u);
+  persistUsers();
+  if (currentUser && currentUser.id === u.id) { currentUser = u; persistCurrentUser(); }
+}
+function getUserEnrolledCourses() {
+  if (!currentUser) return [];
+  const em = currentUser.enrolledCourses || {};
+  return COURSES_DB.filter(c => em[c.id]).map(c => {
+    const pd = em[c.id];
+    const lc = pd?.lessonsCompleted || new Array(c.lessons.length).fill(false);
+    const done = lc.filter(v => v === true).length;
+    const pct = c.lessons.length === 0 ? 0 : Math.round((done / c.lessons.length) * 100);
+    return { ...c, lessonsCompleted: lc, percent: pct, completedCount: done };
+  });
+}
+function enrollCourse(courseId) {
+  if (!currentUser) return false;
+  const c = COURSES_DB.find(x => x.id === courseId); if (!c) return false;
+  let em = currentUser.enrolledCourses || {};
+  if (em[courseId]) return false;
+  em[courseId] = { lessonsCompleted: new Array(c.lessons.length).fill(false) };
+  currentUser.enrolledCourses = em; updateUserInArray(currentUser); return true;
+}
+function toggleLessonCompletion(courseId, idx) {
+  if (!currentUser) return false;
+  const em = currentUser.enrolledCourses || {}; if (!em[courseId]) return false;
+  const arr = em[courseId].lessonsCompleted;
+  if (idx >= 0 && idx < arr.length) {
+    arr[idx] = !arr[idx]; em[courseId].lessonsCompleted = [...arr];
+    currentUser.enrolledCourses = em; updateUserInArray(currentUser); return true;
+  }
+  return false;
+}
+function isEnrolled(courseId) { return !!(currentUser?.enrolledCourses?.[courseId]); }
+
+/* ===================== RENDER CATALOG ===================== */
+function renderCatalog() {
+  const container = document.getElementById("catalogView"); if (!container) return;
+  let html = `<div class="courses-grid">`;
+  COURSES_DB.forEach(c => {
+    const ef = isEnrolled(c.id);
+    const priceDisplay = c.price === 0
+      ? `<span style="color:#059669;font-weight:700;">Miễn phí</span>`
+      : `<span style="color:#1e6091;font-weight:700;">${c.price.toLocaleString('vi-VN')}đ</span>`;
+    const mediaContent = c.imagePath
+      ? `<img src="${c.imagePath}" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none';this.nextElementSibling.style.display='block';"><i class="${c.imageIcon||'fas fa-book'}" style="display:none;font-size:3rem;"></i>`
+      : `<i class="${c.imageIcon||'fas fa-book'}" style="font-size:3rem;"></i>`;
+    html += `
+      <div class="course-card" data-course-id="${c.id}">
+        <div class="course-img" style="background:#cfe5f0;height:160px;display:flex;align-items:center;justify-content:center;overflow:hidden;">${mediaContent}</div>
+        <div class="course-info">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <div class="course-title" style="margin-bottom:0;font-size:1.1rem;">${escHtml(c.title)}</div>
+            <div style="font-size:0.9rem;">${priceDisplay}</div>
+          </div>
+          <div class="course-instructor"><i class="fas fa-chalkboard-teacher"></i> ${escHtml(c.instructor)}</div>
+          <div class="course-desc">${escHtml(c.desc)}</div>
+          <button class="${ef ? 'enroll-btn enrolled' : 'enroll-btn'}" data-enroll-id="${c.id}" ${ef ? 'disabled' : ''}>${ef ? '✔ Đã đăng ký' : 'Đăng ký ngay'}</button>
+        </div>
+      </div>`;
+  });
+  html += `</div>`;
+  container.innerHTML = html;
+  document.querySelectorAll('[data-enroll-id]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const cid = parseInt(btn.getAttribute('data-enroll-id'));
+      if (!currentUser) { alert("Vui lòng đăng nhập để đăng ký khoá học."); document.getElementById("loginModal").style.display = "flex"; return; }
+      if (enrollCourse(cid)) { alert("✅ Đăng ký thành công!"); renderCatalog(); if (activeTab === "mylearning") renderMyLearning(); }
+    });
+  });
+}
+
+/* ===================== RENDER MY LEARNING ===================== */
+function renderMyLearning() {
+  const container = document.getElementById("mylearningView"); if (!container) return;
+  if (!currentUser) {
+    container.innerHTML = `<div class="empty-state"><i class="fas fa-lock" style="font-size:2rem;"></i><h3>Vui lòng đăng nhập</h3><p>Login để xem khoá học và theo dõi tiến độ.</p><button class="btn-sm btn-primary-sm" id="guestLoginPromptBtn">Login / Sign up</button></div>`;
+    const pb = document.getElementById("guestLoginPromptBtn");
+    if (pb) pb.onclick = () => document.getElementById("loginModal").style.display = "flex";
+    return;
+  }
+  const ecs = getUserEnrolledCourses();
+  if (ecs.length === 0) {
+    container.innerHTML = `<div class="empty-state"><i class="fas fa-book-reader" style="font-size:2rem;"></i><h3>Chưa đăng ký khoá nào</h3><p>Khám phá khoá học và bắt đầu học ngay!</p></div>`;
+    return;
+  }
+  let html = `<div class="my-learning-list">`;
+  ecs.forEach(c => {
+    const pct = c.percent || 0;
+    html += `
+      <div class="learning-course">
+        <div class="learning-header">
+          <div class="learning-title">${escHtml(c.title)}</div>
+          <div class="progress-percent">${pct}% hoàn thành</div>
+        </div>
+        <div class="progress-bar-container"><div class="progress-fill" style="width:${pct}%;"></div></div>
+        <div style="font-size:0.82rem;color:#5f6c80;margin-bottom:0.5rem;"><i class="fas fa-chalkboard-user"></i> ${escHtml(c.instructor)}</div>
+        <ul class="lessons-list">`;
+    c.lessons.forEach((lesson, idx) => {
+      const checked = c.lessonsCompleted && c.lessonsCompleted[idx] === true;
+      // Build resource buttons
+      let resBtns = '';
+      if (lesson.resources && lesson.resources.length > 0) {
+        resBtns = `<div class="lesson-resources">`;
+        lesson.resources.forEach(r => {
+          if (r.type === 'video') {
+            resBtns += `<button class="res-btn res-btn-video" onclick="window.open('${escHtml(r.url)}','_blank')"><i class="fas fa-play-circle"></i> ${escHtml(r.label)}</button>`;
+          } else if (r.type === 'pdf') {
+            resBtns += `<button class="res-btn res-btn-pdf" onclick="window.open('${escHtml(r.url)}','_blank')"><i class="fas fa-file-pdf"></i> ${escHtml(r.label)}</button>`;
+          }
+        });
+        resBtns += `</div>`;
+      }
+      html += `
+        <li class="lesson-item">
+          <input type="checkbox" class="lesson-check" data-course="${c.id}" data-lesson-idx="${idx}" ${checked ? 'checked' : ''}>
+          <span class="lesson-name">📘 ${escHtml(lesson.name)}</span>
+          ${resBtns}
+        </li>`;
+    });
+    html += `</ul></div>`;
+  });
+  html += `</div>`;
+  container.innerHTML = html;
+  document.querySelectorAll('.lesson-check').forEach(cb => {
+    cb.addEventListener('change', () => {
+      const cid = parseInt(cb.getAttribute('data-course'));
+      const lid = parseInt(cb.getAttribute('data-lesson-idx'));
+      if (!isNaN(cid) && !isNaN(lid)) { toggleLessonCompletion(cid, lid); renderMyLearning(); }
+    });
+  });
+}
+
+/* ===================== RENDER LIVE ===================== */
+function renderLive() {
+  const container = document.getElementById("liveView"); if (!container) return;
+  const liveNow = LIVE_SESSIONS.filter(s => s.status === 'live');
+  const upcoming = LIVE_SESSIONS.filter(s => s.status === 'upcoming');
+  const ended = LIVE_SESSIONS.filter(s => s.status === 'ended');
+
+  let html = `
+    <div class="schedule-bar">
+      <div class="schedule-bar-item"><i class="fas fa-circle" style="color:#ef4444;font-size:0.6rem;"></i> <strong>${liveNow.length}</strong> buổi đang diễn ra</div>
+      <div class="schedule-bar-item"><i class="fas fa-clock" style="color:#f59e0b;"></i> <strong>${upcoming.length}</strong> sắp tới</div>
+      <div class="schedule-bar-item"><i class="fas fa-info-circle" style="color:#6b7280;"></i> Tham gia qua Google Meet — không cần cài app</div>
+    </div>`;
+
+  if (liveNow.length > 0) {
+    html += `<div class="live-section-title"><i class="fas fa-broadcast-tower" style="color:#ef4444;"></i> Đang diễn ra ngay bây giờ <span class="live-badge">LIVE</span></div><div class="live-grid">`;
+    liveNow.forEach(s => { html += buildLiveCard(s); });
+    html += `</div>`;
+  }
+
+  if (upcoming.length > 0) {
+    html += `<div class="live-section-title" style="color:#b45309;margin-top:1.5rem;"><i class="fas fa-calendar-alt"></i> Sắp diễn ra</div><div class="live-grid">`;
+    upcoming.forEach(s => { html += buildLiveCard(s); });
+    html += `</div>`;
+  }
+
+  if (ended.length > 0) {
+    html += `<div class="live-section-title" style="color:#6b7280;margin-top:1.5rem;"><i class="fas fa-history"></i> Đã kết thúc</div><div class="live-grid">`;
+    ended.forEach(s => { html += buildLiveCard(s); });
+    html += `</div>`;
+  }
+
+  container.innerHTML = html;
+}
+
+function buildLiveCard(s) {
+  let pillClass, pillLabel, joinClass, joinLabel, joinAttr = '';
+  if (s.status === 'live') {
+    pillClass = 'pill-live'; pillLabel = '🔴 Đang Live';
+    joinClass = 'join-btn-active'; joinLabel = '<i class="fas fa-video"></i> Tham gia ngay';
+  } else if (s.status === 'upcoming') {
+    pillClass = 'pill-upcoming'; pillLabel = '⏰ Sắp tới';
+    joinClass = 'join-btn-upcoming'; joinLabel = '<i class="fas fa-lock"></i> Chưa mở';
+    joinAttr = 'disabled';
+  } else {
+    pillClass = 'pill-ended'; pillLabel = '✓ Đã kết thúc';
+    joinClass = 'join-btn-ended'; joinLabel = '<i class="fas fa-ban"></i> Đã kết thúc';
+    joinAttr = 'disabled';
+  }
+  const participantInfo = s.status === 'live'
+    ? `<div class="live-meta"><i class="fas fa-users"></i> ${s.participants} người đang học</div>`
+    : s.status === 'ended'
+    ? `<div class="live-meta"><i class="fas fa-users"></i> ${s.participants} người đã tham gia</div>`
+    : '';
+  const joinAction = s.meetLink && s.status === 'live'
+    ? `onclick="window.open('${escHtml(s.meetLink)}','_blank')"`
+    : '';
+  return `
+    <div class="live-card status-${s.status}">
+      <div class="live-card-top">
+        <div class="live-subject">${escHtml(s.subject)}</div>
+        <div class="live-status-pill ${pillClass}">${pillLabel}</div>
+      </div>
+      <div class="live-teacher"><i class="fas fa-chalkboard-teacher"></i> ${escHtml(s.teacher)}</div>
+      <div class="live-meta"><i class="fas fa-clock"></i> ${escHtml(s.dateStr)}</div>
+      ${participantInfo}
+      <div class="live-desc">${escHtml(s.desc)}</div>
+      <button class="join-btn ${joinClass}" ${joinAttr} ${joinAction}>${joinLabel}</button>
+    </div>`;
+}
+
+/* ===================== HELPERS ===================== */
+function escHtml(str) { return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]||m)); }
+
+function updateHeaderUI() {
+  const g = document.getElementById("greetingText");
+  const lb = document.getElementById("loginBtn"); const sb = document.getElementById("signupBtn"); const lo = document.getElementById("logoutBtn");
+  if (currentUser) { g.innerHTML = `<i class="fas fa-user-circle"></i> Hello, ${escHtml(currentUser.username)}`; lb.style.display="none"; sb.style.display="none"; lo.style.display="inline-flex"; }
+  else { g.innerHTML = `Guest`; lb.style.display="inline-flex"; sb.style.display="inline-flex"; lo.style.display="none"; }
+}
+
+function logout() {
+  currentUser = null; localStorage.removeItem(CURRENT_USER_KEY); updateHeaderUI();
+  if (activeTab === "catalog") renderCatalog();
+  else if (activeTab === "mylearning") renderMyLearning();
+  else if (activeTab === "live") renderLive();
+}
+
+function login(username, password) {
+  const u = users.find(x => x.username === username && x.password === password);
+  if (u) { currentUser = u; persistCurrentUser(); updateHeaderUI(); closeModals(); if (activeTab === "catalog") renderCatalog(); else if (activeTab === "mylearning") renderMyLearning(); else renderLive(); return true; }
+  return false;
+}
+
+function signup(username, email, password) {
+  if (users.find(u => u.username === username)) return { success: false, msg: "Username đã tồn tại." };
+  if (!username.trim() || !password.trim()) return { success: false, msg: "Cần điền username & password." };
+  const nid = users.length > 0 ? Math.max(...users.map(u => u.id)) + 1 : 1;
+  const nu = { id: nid, username: username.trim(), email: email.trim(), password, enrolledCourses: {} };
+  users.push(nu); persistUsers(); currentUser = nu; persistCurrentUser(); updateHeaderUI(); closeModals();
+  if (activeTab === "catalog") renderCatalog(); else if (activeTab === "mylearning") renderMyLearning(); else renderLive();
+  return { success: true };
+}
+
+function openLoginModal() { document.getElementById("loginModal").style.display = "flex"; }
+function openSignupModal() { document.getElementById("signupModal").style.display = "flex"; }
+function closeModals() {
+  document.getElementById("loginModal").style.display = "none";
+  document.getElementById("signupModal").style.display = "none";
+  document.getElementById("loginError").innerText = "";
+  document.getElementById("signupError").innerText = "";
+}
+
+function setActiveTab(tabId) {
+  activeTab = tabId;
+  document.querySelectorAll(".tab-btn").forEach(btn => {
+    btn.classList.toggle("active", btn.getAttribute("data-tab") === tabId);
+  });
+  document.getElementById("catalogView").style.display = tabId === "catalog" ? "block" : "none";
+  document.getElementById("mylearningView").style.display = tabId === "mylearning" ? "block" : "none";
+  document.getElementById("liveView").style.display = tabId === "live" ? "block" : "none";
+  if (tabId === "catalog") renderCatalog();
+  else if (tabId === "mylearning") renderMyLearning();
+  else if (tabId === "live") renderLive();
+}
+
+function bindGlobalEvents() {
+  document.getElementById("loginBtn").addEventListener("click", openLoginModal);
+  document.getElementById("signupBtn").addEventListener("click", openSignupModal);
+  document.getElementById("logoutBtn").addEventListener("click", logout);
+  document.getElementById("closeLoginModal").addEventListener("click", closeModals);
+  document.getElementById("closeSignupModal").addEventListener("click", closeModals);
+  document.getElementById("confirmLoginBtn").addEventListener("click", () => {
+    const u = document.getElementById("loginUsername").value;
+    const p = document.getElementById("loginPassword").value;
+    if (!login(u, p)) document.getElementById("loginError").innerText = "Sai tài khoản hoặc mật khẩu";
+    else { document.getElementById("loginUsername").value = ""; document.getElementById("loginPassword").value = ""; }
+  });
+  document.getElementById("confirmSignupBtn").addEventListener("click", () => {
+    const u = document.getElementById("signupUsername").value;
+    const e = document.getElementById("signupEmail").value;
+    const p = document.getElementById("signupPassword").value;
+    const r = signup(u, e, p);
+    if (!r.success) document.getElementById("signupError").innerText = r.msg;
+    else { document.getElementById("signupUsername").value = ""; document.getElementById("signupEmail").value = ""; document.getElementById("signupPassword").value = ""; }
+  });
+  document.querySelectorAll(".tab-btn").forEach(btn => {
+    btn.addEventListener("click", () => setActiveTab(btn.getAttribute("data-tab")));
+  });
+  window.addEventListener("click", e => { if (e.target.classList.contains("modal")) closeModals(); });
+}
+
+function init() { loadData(); bindGlobalEvents(); updateHeaderUI(); setActiveTab("catalog"); }
+init();
+</script>
+</body>
+</html>
