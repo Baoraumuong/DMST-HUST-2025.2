@@ -1,26 +1,31 @@
+const MODEL = "gemini-2.5-flash";
+
+function getErrorMessage(data, fallback) {
+  return data?.error?.message || data?.error || fallback;
+}
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const { message } = req.body;
+  const { message } = req.body || {};
 
-  if (!message) {
+  if (!message || !String(message).trim()) {
     return res.status(400).json({ error: "Thiếu nội dung tin nhắn" });
   }
 
-  const API_KEY = process.env.GEMINI_API_KEY;
-  const MODEL = "gemini-2.5-flash";
+  const apiKey = process.env.GEMINI_API_KEY;
 
-  if (!API_KEY) {
+  if (!apiKey) {
     return res.status(500).json({
-      error: "Thiếu GEMINI_API_KEY trong Vercel Environment Variables"
+      error: "Server chưa cấu hình GEMINI_API_KEY"
     });
   }
 
   try {
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${apiKey}`,
       {
         method: "POST",
         headers: {
@@ -37,23 +42,23 @@ export default async function handler(req, res) {
           contents: [
             {
               role: "user",
-              parts: [{ text: message }]
+              parts: [{ text: String(message).trim() }]
             }
           ]
         })
       }
     );
 
-    const data = await response.json();
+    const data = await response.json().catch(() => null);
 
     if (!response.ok) {
       return res.status(response.status).json({
-        error: data.error?.message || "Lỗi từ Gemini"
+        error: getErrorMessage(data, "Lỗi từ Gemini")
       });
     }
 
     const reply =
-      data.candidates?.[0]?.content?.parts?.[0]?.text ||
+      data?.candidates?.[0]?.content?.parts?.[0]?.text ||
       "Xin lỗi, tôi chưa hiểu câu hỏi.";
 
     return res.status(200).json({ reply });

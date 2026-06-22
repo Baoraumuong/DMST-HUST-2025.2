@@ -146,6 +146,49 @@
     .schedule-bar-item { font-size: 0.85rem; color: #334155; display: flex; align-items: center; gap: 6px; }
     .schedule-bar-item strong { color: #1e6091; }
 
+    /* feedback */
+    .feedback-layout { display: grid; grid-template-columns: minmax(280px, 0.9fr) minmax(320px, 1.4fr); gap: 1.5rem; align-items: start; }
+    .feedback-panel {
+      background: white; border-radius: 1.5rem; padding: 1.4rem;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+    }
+    .feedback-panel h2, .feedback-panel h3 { margin-bottom: 0.5rem; color: #1e6091; }
+    .feedback-subtitle { color: #5f6c80; font-size: 0.88rem; margin-bottom: 1.1rem; }
+    .feedback-form { display: grid; gap: 0.85rem; }
+    .feedback-form label { font-size: 0.78rem; font-weight: 700; color: #334155; }
+    .feedback-form input, .feedback-form select, .feedback-form textarea {
+      width: 100%; border: 1px solid #cbd5e1; border-radius: 0.9rem;
+      padding: 0.75rem 0.85rem; font-size: 0.9rem; color: #1a2c3e; background: #f8fafc;
+    }
+    .feedback-form textarea { min-height: 120px; resize: vertical; line-height: 1.45; }
+    .feedback-submit {
+      border: none; border-radius: 40px; padding: 0.8rem 1rem; background: #1e6091;
+      color: white; font-weight: 700; cursor: pointer; transition: 0.2s;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .feedback-submit:hover { background: #0f4b6e; }
+    .feedback-success { display: none; color: #047857; font-weight: 700; font-size: 0.84rem; }
+    .feedback-stats {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.7rem; margin-bottom: 1rem;
+    }
+    .feedback-stat {
+      background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 1rem;
+      padding: 0.8rem; text-align: center;
+    }
+    .feedback-stat strong { display: block; color: #1e6091; font-size: 1.25rem; }
+    .feedback-stat span { color: #64748b; font-size: 0.72rem; font-weight: 600; }
+    .feedback-list { display: grid; gap: 1rem; }
+    .feedback-card {
+      background: #ffffff; border: 1px solid #e2e8f0; border-radius: 1.2rem;
+      padding: 1rem; box-shadow: 0 4px 12px rgba(0,0,0,0.035);
+    }
+    .feedback-card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; margin-bottom: 0.45rem; }
+    .feedback-author { font-weight: 800; color: #1a2c3e; }
+    .feedback-course { color: #5f6c80; font-size: 0.8rem; margin-top: 0.1rem; }
+    .feedback-stars { color: #f59e0b; white-space: nowrap; font-size: 0.9rem; }
+    .feedback-comment { color: #334155; font-size: 0.9rem; line-height: 1.5; }
+    .feedback-date { color: #94a3b8; font-size: 0.72rem; margin-top: 0.7rem; }
+
     /* modal */
     .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 1000; }
     .modal-content { background: white; max-width: 420px; width: 90%; padding: 2rem; border-radius: 2rem; box-shadow: 0 20px 35px rgba(0,0,0,0.2); }
@@ -161,6 +204,8 @@
       .header { flex-direction: column; align-items: stretch; }
       .nav-tabs { width: 100%; justify-content: center; }
       .schedule-bar { gap: 1rem; }
+      .feedback-layout { grid-template-columns: 1fr; }
+      .feedback-stats { grid-template-columns: 1fr; }
     }
 
     /* Chatbot */
@@ -214,13 +259,15 @@
 
   <div class="nav-tabs">
     <button class="tab-btn active" data-tab="catalog"><i class="fas fa-book-open"></i> Xem khoá học</button>
-    <button class="tab-btn" data-tab="mylearning"><i class="fas fa-graduation-cap"></i> Khoá học của tao</button>
+    <button class="tab-btn" data-tab="mylearning"><i class="fas fa-graduation-cap"></i> Khoá học của tôi</button>
     <button class="tab-btn" data-tab="live"><i class="fas fa-video"></i> Phòng học trực tiếp <span class="live-badge">LIVE</span></button>
+    <button class="tab-btn" data-tab="feedback"><i class="fas fa-star"></i> Phản hồi</button>
   </div>
 
   <div id="catalogView" class="view"></div>
   <div id="mylearningView" class="view" style="display:none;"></div>
   <div id="liveView" class="view" style="display:none;"></div>
+  <div id="feedbackView" class="view" style="display:none;"></div>
 
   <footer>© 2026 X-Teaching — MVP e-learning. Học thật thi thật.</footer>
 </div>
@@ -332,15 +379,14 @@ async function sendMessageToAI(message) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ message })
     });
+    const data = await response.json().catch(() => null);
     if (!response.ok) {
-      const err = await response.json();
-      throw new Error(err.error || "Lỗi server");
+      throw new Error(data?.error || "Không thể kết nối tới chatbot");
     }
-    const data = await response.json();
-    return data.reply;
+    return data?.reply || "Xin lỗi, tôi chưa hiểu câu hỏi.";
   } catch (err) {
     console.error(err);
-    return "💥 Lỗi: " + err.message;
+    return "Lỗi: " + err.message;
   }
 }
 
@@ -366,19 +412,19 @@ const COURSES_DB = [
   {
     id: 1, title: "Giải tích I", instructor: "Ronaldo", desc: "Đạo hàm, Tích Phân, Giới hạn.", price: 0, imagePath: "GT1.jpg", imageIcon: "fas fa-infinity",
     lessons: [
-      { name: "Bài 1: Giới thiệu hàm số", resources: [{ type: "video", label: "Xem video", url: "https://www.youtube.com/watch?v=-WKE4klF6-A&list=PL5g_dfwUnO84tXyWXKnzF7aZXNT_SkHoY" }, { type: "pdf", label: "Bài tập", url: "https://cuuduongthancong.com/pvf/2769434/giai-tich-2//tuye%CC%89n-ta%CC%A3p-de%CC%80-thi-cuo%CC%81i-ki%CC%80-co%CC%81-gia%CC%89i-chi-tie%CC%81t.pdf#google_vignette" }] },
-      { name: "Bài 2: Tìm đạo hàm", resources: [{ type: "video", label: "Xem video", url: "https://www.youtube.com/watch?v=krLN9nBAIMk&list=PL5g_dfwUnO84tXyWXKnzF7aZXNT_SkHoY&index=2" }] },
+      { name: "Bài 1: Giới thiệu hàm số", resources: [{ type: "video", label: "Xem video", url: "https://www.youtube.com/watch?v=-WKE4klF6-A&list=PL5g_dfwUnO84tXyWXKnzF7aZXNT_SkHoY" }, { type: "pdf", label: "Bài tập", url: "https://tse1.mm.bing.net/th/id/OIP.BrBBPerD3VI2F7jxXyDtwQHaJl?rs=1&pid=ImgDetMain&o=7&rm=3" }] },
+      { name: "Bài 2: Tìm đạo hàm", resources: [{ type: "video", label: "Xem video", url: "https://rr4---sn-npoe7nl6.googlevideo.com/videoplayback?expire=1782119914&ei=iqk4auSXDrqAkucPw9Xd-Qw&ip=82.40.92.113&id=o-ANARMvD7ZxkjqH0_ZEwGkUzLubH4LmV6Tn8y92bgyw9h&itag=160&aitags=133%2C134%2C160%2C242%2C243%2C278&source=youtube&requiressl=yes&xpc=EgVo2aDSNQ%3D%3D&rms=au%2Cau&bui=ARmQxEV_qjP-r2TLrCrVcxX2SZLxM6VwC6W4RRTWNZsKGuKVrOdLigy4MngAuHnut1i8LQb_K8CHD16u&spc=SQ-umk8GqrSOXGZof0b3ajVQLKCbBvR5ETRJMH9Rfes2yWFU6n5rG4yS2FDbrEjmvWjHGw&vprv=1&svpuc=1&mime=video%2Fmp4&ns=dhgiEuH4JwjOMOeiPhLpXAEW&rqh=1&gir=yes&clen=102826&dur=32.799&lmt=1733496098662564&keepalive=yes&fexp=51565116,51565681,51987687&c=WEB_EMBEDDED_PLAYER&sefc=1&txp=631A224&n=k2VKHVwoThGPpA&sparams=expire%2Cei%2Cip%2Cid%2Caitags%2Csource%2Crequiressl%2Cxpc%2Cbui%2Cspc%2Cvprv%2Csvpuc%2Cmime%2Cns%2Crqh%2Cgir%2Cclen%2Cdur%2Clmt&sig=AHEqNM4wRQIgMAIR1tpiuc2vxLhh5letg5X2VUzTVUvlLWOrdwWIvzMCIQDbdrVLGxV9fTBw1A522k7TxuNM4DUzv61nc3vpMIFV4Q%3D%3D&rm=sn-ab5esd7s&rrc=104,191&req_id=aefe6aaca82fa3ee&ipbypass=yes&redirect_counter=2&cm2rm=sn-8qj-i5orz7z&cms_redirect=yes&cmsv=e&met=1782098346,&mh=je&mip=2001:ee0:8206:2705:c9f8:81f0:d94a:edc1&mm=29&mn=sn-npoe7nl6&ms=rdu&mt=1782097975&mv=m&mvi=4&pl=48&lsparams=ipbypass,met,mh,mip,mm,mn,ms,mv,mvi,pl,rms&lsig=APaTxxMwRQIgKz-0LbZ4nFFOi4u1p_3jK4MzoZ4xYdrtjCJDfChBHxYCIQCW2FaONi5Plr6puVU4dvdgVQWiKxn7d9XPEwILdxYjrw%3D%3D" }] },
     ]
   },
   {
     id: 2, title: "Giải tích II", instructor: "Phong ", desc: "Tích phân đường, Tích phân mặt.", price: 100000, imageIcon: "fas fa-wave-square",
     lessons: [
-      { name: "Phong không che", resources: [{ type: "video", label: "Xem video", url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" }] },
+      { name: "Phong ", resources: [{ type: "video", label: "Xem video", url: "https://rr4---sn-npoe7nl6.googlevideo.com/videoplayback?expire=1782119914&ei=iqk4auSXDrqAkucPw9Xd-Qw&ip=82.40.92.113&id=o-ANARMvD7ZxkjqH0_ZEwGkUzLubH4LmV6Tn8y92bgyw9h&itag=160&aitags=133%2C134%2C160%2C242%2C243%2C278&source=youtube&requiressl=yes&xpc=EgVo2aDSNQ%3D%3D&rms=au%2Cau&bui=ARmQxEV_qjP-r2TLrCrVcxX2SZLxM6VwC6W4RRTWNZsKGuKVrOdLigy4MngAuHnut1i8LQb_K8CHD16u&spc=SQ-umk8GqrSOXGZof0b3ajVQLKCbBvR5ETRJMH9Rfes2yWFU6n5rG4yS2FDbrEjmvWjHGw&vprv=1&svpuc=1&mime=video%2Fmp4&ns=dhgiEuH4JwjOMOeiPhLpXAEW&rqh=1&gir=yes&clen=102826&dur=32.799&lmt=1733496098662564&keepalive=yes&fexp=51565116,51565681,51987687&c=WEB_EMBEDDED_PLAYER&sefc=1&txp=631A224&n=k2VKHVwoThGPpA&sparams=expire%2Cei%2Cip%2Cid%2Caitags%2Csource%2Crequiressl%2Cxpc%2Cbui%2Cspc%2Cvprv%2Csvpuc%2Cmime%2Cns%2Crqh%2Cgir%2Cclen%2Cdur%2Clmt&sig=AHEqNM4wRQIgMAIR1tpiuc2vxLhh5letg5X2VUzTVUvlLWOrdwWIvzMCIQDbdrVLGxV9fTBw1A522k7TxuNM4DUzv61nc3vpMIFV4Q%3D%3D&rm=sn-ab5esd7s&rrc=104,191&req_id=aefe6aaca82fa3ee&ipbypass=yes&redirect_counter=2&cm2rm=sn-8qj-i5orz7z&cms_redirect=yes&cmsv=e&met=1782098346,&mh=je&mip=2001:ee0:8206:2705:c9f8:81f0:d94a:edc1&mm=29&mn=sn-npoe7nl6&ms=rdu&mt=1782097975&mv=m&mvi=4&pl=48&lsparams=ipbypass,met,mh,mip,mm,mn,ms,mv,mvi,pl,rms&lsig=APaTxxMwRQIgKz-0LbZ4nFFOi4u1p_3jK4MzoZ4xYdrtjCJDfChBHxYCIQCW2FaONi5Plr6puVU4dvdgVQWiKxn7d9XPEwILdxYjrw%3D%3D" }] },
       { name: "Đề thi 2026.2", resources: [{ type: "pdf", label: "Đề thi PDF", url: "https://www.w3.org/WAI/WCAG21/Techniques/pdf/PDF1" }] },
     ]
   },
   {
-    id: 3, title: "Giải tích III", instructor: "Thành", desc: "Chuỗi số, Khai triển Fourier.", price: 100000, imageIcon: "fas fa-brain",
+    id: 3, title: "Giải tích III", instructor: "Mbappe", desc: "Chuỗi số, Khai triển Fourier.", price: 100000, imageIcon: "fas fa-brain",
     lessons: [
       { name: "Bài 1: Chuỗi số", resources: [{ type: "video", label: "Xem video", url: "https://www.youtube.com/watch?v=r6sGWTCMz2k" }, { type: "pdf", label: "Tài liệu", url: "https://www.w3.org/WAI/WCAG21/Techniques/pdf/PDF1" }] },
     ]
@@ -415,7 +461,7 @@ const LIVE_SESSIONS = [
     meetLink: "https://meet.google.com/pqr-stuv-wx2", participants: 0
   },
   {
-    id: 4, subject: "Giải tích III — Chuỗi Fourier", teacher: "Thầy Thành",
+    id: 4, subject: "Giải tích III — Chuỗi Fourier", teacher: "Thầy Mbappe",
     status: "ended", dateStr: "Thứ Hai, 18:00 – 19:30",
     desc: "Khai triển Fourier, điều kiện hội tụ và ứng dụng.",
     meetLink: null, participants: 24
@@ -434,16 +480,52 @@ const LIVE_SESSIONS = [
   }
 ];
 
+/* ===================== FEEDBACK DATA ===================== */
+const FEEDBACK_STORAGE = "eduflow_feedback";
+const DEFAULT_FEEDBACKS = [
+  {
+    name: "Minh Anh",
+    course: "Giải tích I",
+    rating: 5,
+    comment: "Giao diện dễ dùng, bài học được chia nhỏ nên mình theo kịp tiến độ tốt hơn. Phần live giúp hỏi bài rất nhanh.",
+    date: "18/06/2026"
+  },
+  {
+    name: "Quốc Bảo",
+    course: "Đại số tuyến tính",
+    rating: 5,
+    comment: "Mình thích cách theo dõi phần trăm hoàn thành. Nhìn vào là biết hôm nay cần học tiếp chỗ nào.",
+    date: "19/06/2026"
+  },
+  {
+    name: "Thanh Trúc",
+    course: "Phòng học trực tiếp",
+    rating: 5,
+    comment: "Lịch học rõ ràng, nút tham gia lớp nổi bật. Website nhẹ và vào lớp trực tuyến rất tiện.",
+    date: "20/06/2026"
+  },
+  {
+    name: "Hoàng Nam",
+    course: "Trải nghiệm website",
+    rating: 4,
+    comment: "Tổng thể mượt, màu sắc dễ nhìn. Nếu thêm nhiều bài tập mẫu hơn nữa thì quá ổn cho ôn thi.",
+    date: "21/06/2026"
+  }
+];
+
 /* ===================== STORAGE ===================== */
 const USERS_STORAGE = "eduflow_users";
 const CURRENT_USER_KEY = "eduflow_currentUser";
 let currentUser = null;
 let users = [];
+let userFeedbacks = [];
 let activeTab = "catalog";
 
 function loadData() {
   const su = localStorage.getItem(USERS_STORAGE);
   users = su ? JSON.parse(su) : [];
+  const sf = localStorage.getItem(FEEDBACK_STORAGE);
+  userFeedbacks = sf ? JSON.parse(sf) : [];
   const sc = localStorage.getItem(CURRENT_USER_KEY);
   if (sc) {
     const cu = JSON.parse(sc);
@@ -452,6 +534,7 @@ function loadData() {
   }
 }
 function persistUsers() { localStorage.setItem(USERS_STORAGE, JSON.stringify(users)); }
+function persistFeedbacks() { localStorage.setItem(FEEDBACK_STORAGE, JSON.stringify(userFeedbacks)); }
 function persistCurrentUser() {
   if (currentUser) localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(currentUser));
   else localStorage.removeItem(CURRENT_USER_KEY);
@@ -663,6 +746,112 @@ function buildLiveCard(s) {
     </div>`;
 }
 
+/* ===================== RENDER FEEDBACK ===================== */
+function renderFeedback() {
+  const container = document.getElementById("feedbackView"); if (!container) return;
+  const feedbacks = [...userFeedbacks, ...DEFAULT_FEEDBACKS];
+  const avg = feedbacks.length
+    ? (feedbacks.reduce((sum, item) => sum + Number(item.rating || 0), 0) / feedbacks.length).toFixed(1)
+    : "0.0";
+  const positiveCount = feedbacks.filter(item => Number(item.rating || 0) >= 4).length;
+
+  const courseOptions = COURSES_DB.map(c => `<option value="${escHtml(c.title)}">${escHtml(c.title)}</option>`).join("");
+  const cards = feedbacks.map(item => buildFeedbackCard(item)).join("");
+
+  container.innerHTML = `
+    <div class="feedback-layout">
+      <div class="feedback-panel">
+        <h2><i class="fas fa-comment-dots"></i> Gửi phản hồi</h2>
+        <p class="feedback-subtitle">Chia sẻ cảm nhận của bạn để X-Teaching cải thiện trải nghiệm học tập.</p>
+        <form class="feedback-form" id="feedbackForm">
+          <div>
+            <label for="feedbackName">Tên của bạn</label>
+            <input id="feedbackName" type="text" placeholder="Ví dụ: Nguyễn An" value="${currentUser ? escHtml(currentUser.username) : ""}" required>
+          </div>
+          <div>
+            <label for="feedbackCourse">Nội dung liên quan</label>
+            <select id="feedbackCourse">
+              <option value="Trải nghiệm website">Trải nghiệm website</option>
+              ${courseOptions}
+              <option value="Phòng học trực tiếp">Phòng học trực tiếp</option>
+            </select>
+          </div>
+          <div>
+            <label for="feedbackRating">Mức hài lòng</label>
+            <select id="feedbackRating">
+              <option value="5">5 sao - Rất hài lòng</option>
+              <option value="4">4 sao - Hài lòng</option>
+              <option value="3">3 sao - Tạm ổn</option>
+              <option value="2">2 sao - Cần cải thiện</option>
+              <option value="1">1 sao - Chưa hài lòng</option>
+            </select>
+          </div>
+          <div>
+            <label for="feedbackComment">Phản hồi</label>
+            <textarea id="feedbackComment" placeholder="Điều bạn thích hoặc mong muốn cải thiện..." required></textarea>
+          </div>
+          <button class="feedback-submit" type="submit"><i class="fas fa-paper-plane"></i> Gửi phản hồi</button>
+          <div class="feedback-success" id="feedbackSuccess"><i class="fas fa-check-circle"></i> Cảm ơn bạn, phản hồi đã được ghi nhận.</div>
+        </form>
+      </div>
+
+      <div class="feedback-panel">
+        <h3><i class="fas fa-heart"></i> Người học nói gì?</h3>
+        <p class="feedback-subtitle">Một vài phản hồi tích cực từ người dùng thử nghiệm.</p>
+        <div class="feedback-stats">
+          <div class="feedback-stat"><strong>${avg}</strong><span>điểm trung bình</span></div>
+          <div class="feedback-stat"><strong>${positiveCount}</strong><span>phản hồi tích cực</span></div>
+          <div class="feedback-stat"><strong>${feedbacks.length}</strong><span>lượt đánh giá</span></div>
+        </div>
+        <div class="feedback-list">${cards}</div>
+      </div>
+    </div>`;
+
+  const form = document.getElementById("feedbackForm");
+  if (form) form.addEventListener("submit", handleFeedbackSubmit);
+}
+
+function buildFeedbackCard(item) {
+  const rating = Math.max(1, Math.min(5, Number(item.rating || 5)));
+  const stars = Array.from({ length: 5 }, (_, idx) => idx < rating ? '<i class="fas fa-star"></i>' : '<i class="far fa-star"></i>').join("");
+  return `
+    <div class="feedback-card">
+      <div class="feedback-card-top">
+        <div>
+          <div class="feedback-author">${escHtml(item.name)}</div>
+          <div class="feedback-course">${escHtml(item.course)}</div>
+        </div>
+        <div class="feedback-stars">${stars}</div>
+      </div>
+      <div class="feedback-comment">${escHtml(item.comment)}</div>
+      <div class="feedback-date">${escHtml(item.date)}</div>
+    </div>`;
+}
+
+function handleFeedbackSubmit(e) {
+  e.preventDefault();
+  const name = document.getElementById("feedbackName").value.trim();
+  const course = document.getElementById("feedbackCourse").value;
+  const rating = Number(document.getElementById("feedbackRating").value);
+  const comment = document.getElementById("feedbackComment").value.trim();
+  if (!name || !comment) return;
+
+  userFeedbacks.unshift({
+    name,
+    course,
+    rating,
+    comment,
+    date: new Date().toLocaleDateString("vi-VN")
+  });
+  persistFeedbacks();
+  renderFeedback();
+  const success = document.getElementById("feedbackSuccess");
+  if (success) {
+    success.style.display = "block";
+    setTimeout(() => { success.style.display = "none"; }, 2500);
+  }
+}
+
 /* ===================== HELPERS ===================== */
 function escHtml(str) { return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]||m)); }
 
@@ -678,11 +867,12 @@ function logout() {
   if (activeTab === "catalog") renderCatalog();
   else if (activeTab === "mylearning") renderMyLearning();
   else if (activeTab === "live") renderLive();
+  else if (activeTab === "feedback") renderFeedback();
 }
 
 function login(username, password) {
   const u = users.find(x => x.username === username && x.password === password);
-  if (u) { currentUser = u; persistCurrentUser(); updateHeaderUI(); closeModals(); if (activeTab === "catalog") renderCatalog(); else if (activeTab === "mylearning") renderMyLearning(); else renderLive(); return true; }
+  if (u) { currentUser = u; persistCurrentUser(); updateHeaderUI(); closeModals(); if (activeTab === "catalog") renderCatalog(); else if (activeTab === "mylearning") renderMyLearning(); else if (activeTab === "live") renderLive(); else renderFeedback(); return true; }
   return false;
 }
 
@@ -692,7 +882,7 @@ function signup(username, email, password) {
   const nid = users.length > 0 ? Math.max(...users.map(u => u.id)) + 1 : 1;
   const nu = { id: nid, username: username.trim(), email: email.trim(), password, enrolledCourses: {} };
   users.push(nu); persistUsers(); currentUser = nu; persistCurrentUser(); updateHeaderUI(); closeModals();
-  if (activeTab === "catalog") renderCatalog(); else if (activeTab === "mylearning") renderMyLearning(); else renderLive();
+  if (activeTab === "catalog") renderCatalog(); else if (activeTab === "mylearning") renderMyLearning(); else if (activeTab === "live") renderLive(); else renderFeedback();
   return { success: true };
 }
 
@@ -713,9 +903,11 @@ function setActiveTab(tabId) {
   document.getElementById("catalogView").style.display = tabId === "catalog" ? "block" : "none";
   document.getElementById("mylearningView").style.display = tabId === "mylearning" ? "block" : "none";
   document.getElementById("liveView").style.display = tabId === "live" ? "block" : "none";
+  document.getElementById("feedbackView").style.display = tabId === "feedback" ? "block" : "none";
   if (tabId === "catalog") renderCatalog();
   else if (tabId === "mylearning") renderMyLearning();
   else if (tabId === "live") renderLive();
+  else if (tabId === "feedback") renderFeedback();
 }
 
 function bindGlobalEvents() {
